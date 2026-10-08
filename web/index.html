@@ -180,9 +180,17 @@ function renderContainers(list){
     var tr = document.createElement('tr');
     var badgeCls = c.routed ? 'ok' : 'dim';
     var stateText = c.routed ? 'через zapret' : 'напрямую';
+    var actionCell;
+    if(c.self){
+      actionCell = '<span class="dim">этот шлюз</span>';
+      stateText = '—';
+      badgeCls = 'warn';
+    }else{
+      actionCell = '<button class="small '+(c.routed?'sec danger':'')+'" data-act="'+(c.routed?'unroute':'route')+'" data-name="'+esc(c.name)+'">'+(c.routed?'Отключить':'Через zapret')+'</button>';
+    }
     tr.innerHTML = '<td><b>'+esc(c.name)+'</b></td><td class="mono">'+esc(c.image)+'</td><td class="mono">'+esc(c.ip)+'</td>' +
       '<td><span class="badge '+badgeCls+'">'+esc(stateText)+'</span></td>' +
-      '<td><button class="small '+(c.routed?'sec danger':'')+'" data-act="'+(c.routed?'unroute':'route')+'" data-name="'+esc(c.name)+'">'+(c.routed?'Отключить':'Через zapret')+'</button></td>';
+      '<td>'+actionCell+'</td>';
     body.appendChild(tr);
   });
 }

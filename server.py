@@ -4,6 +4,7 @@ import ipaddress
 import json
 import os
 import re
+import socket
 import subprocess
 import threading
 import time
@@ -298,6 +299,13 @@ def docker_ps():
     return items
 
 
+def self_name():
+    r = run(["docker", "ps", "--filter", "id=" + socket.gethostname(), "--format", "{{.Names}}"])
+    if r and r.returncode == 0 and r.stdout.strip():
+        return r.stdout.strip().splitlines()[0]
+    return socket.gethostname()
+
+
 def containers_info():
     items = docker_ps()
     ids = [c.get("ID", "") for c in items if c.get("ID")]
@@ -422,12 +430,14 @@ class Handler(BaseHTTPRequestHandler):
     def _api_containers(self):
         routed = set(load_routes()["containers"])
         state = route_state()
+        selfn = self_name()
         out = []
         for c in containers_info():
             out.append({
                 **c,
                 "routed": c["name"] in routed,
                 "applied": c["name"] in state,
+                "self": c["name"] == selfn,
             })
         return out
 
@@ -537,6 +547,9 @@ class Handler(BaseHTTPRequestHandler):
                 self._error("нужны поля action и name", 400)
                 return
             if action == "add":
+                if name == self_name():
+                    self._error("нельзя маршрутизировать контейнер шлюза через самого себя", 400)
+                    return
                 routes = load_routes()
                 if name not in routes["containers"]:
                     routes["containers"].append(name)
