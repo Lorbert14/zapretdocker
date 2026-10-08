@@ -9,6 +9,8 @@ RUN apt-get update \
         bash \
         ca-certificates \
         curl \
+        findutils \
+        grep \
         gzip \
         iproute2 \
         ipset \
