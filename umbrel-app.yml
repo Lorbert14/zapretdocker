@@ -1,0 +1,54 @@
+manifestVersion: 1
+id: zapret-vpn-gateway
+category: networking
+name: Zapret VPN Gateway
+version: "1.0.0"
+tagline: WireGuard VPN-шлюз с обходом DPI (zapret) для всей вашей Umbrel
+description: >-
+  Zapret VPN Gateway — это комбинированный VPN-шлюз для umbrelOS, который решает две задачи:
+
+
+  1. WireGuard VPN для iPhone/iOS — поднимите собственный VPN-сервер на вашей Umbrel, добавьте iPhone по QR-коду из веб-панели и весь трафик телефона пойдёт через ваш домашний канал с активным обходом DPI.
+
+
+  2. Прозрачный обход замедления YouTube/Discord (zapret) для выбранных Docker-контейнеров Umbrel — например, yt-dlp, cobalt и других сервисов скачивания контента. Их исходящий трафик маршрутизируется через шлюз zapret, который применяет стратегии dpi-desync (nfqws) из проекта SergeyDiGi3/zapret-discord-youtube-linux.
+
+
+  Что внутри:
+
+
+  • nfqws/tpws от bol-van/zapret (v72.9) со стратегиями Flowseal (multisplit, fake QUIC, TTL-обман)
+
+
+  • WireGuard-сервер с удобной веб-панелью: QR-коды, конфиги, управление пирами
+
+
+  • Выборочный проброс контейнеров Umbrel через zapret (маршрут подменяется через docker.sock)
+
+
+  • Логи и статус в веб-интерфейсе по адресу http://umbrel.local:8095
+developer: Community
+website: https://github.com/Sergeydigl3/zapret-discord-youtube-linux
+dependencies: []
+repo: https://github.com/Sergeydigl3/zapret-discord-youtube-linux
+support: https://github.com/Sergeydigl3/zapret-discord-youtube-linux/discussions
+port: 8095
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+torOnly: false
+submitter: Community
+submission: ""
+releaseNotes: >-
+  Первый релиз Zapret VPN Gateway для umbrelOS.
+
+
+  • WireGuard VPN-шлюз для iOS с QR-кодом
+
+
+  • Обход DPI (nfqws) для выбранных контейнеров
+
+
+  • Веб-панель управления на порту 8095
+icon: icon.svg

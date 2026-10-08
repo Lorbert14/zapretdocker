@@ -1,0 +1,45 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: zapret-vpn-gateway_app_1
+      APP_PORT: 8095
+      PROXY_AUTH_ADD: "false"
+
+  app:
+    build: .
+    image: zapret-vpn-gateway:1.0.0
+    restart: on-failure
+    stop_grace_period: 1m
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+    environment:
+      APP_ZAPRET_VPN_WG_PORT: ${APP_ZAPRET_VPN_WG_PORT:-51820}
+      APP_ZAPRET_VPN_ENDPOINT: ${APP_ZAPRET_VPN_ENDPOINT:-${DEVICE_DOMAIN_NAME:-umbrel.local}}
+      APP_ZAPRET_VPN_WG_SUBNET: ${APP_ZAPRET_VPN_WG_SUBNET:-10.11.12.0/24}
+      APP_ZAPRET_VPN_CLIENT_DNS: ${APP_ZAPRET_VPN_CLIENT_DNS:-1.1.1.1}
+      APP_ZAPRET_VPN_MODE: ${APP_ZAPRET_VPN_MODE:-nfqws}
+      APP_ZAPRET_VPN_STRATEGY: ${APP_ZAPRET_VPN_STRATEGY:-general}
+      APP_ZAPRET_VPN_ZAPRET_ALL: ${APP_ZAPRET_VPN_ZAPRET_ALL:-0}
+      APP_ZAPRET_VPN_GAMEFILTER: ${APP_ZAPRET_VPN_GAMEFILTER:-0}
+      APP_ZAPRET_VPN_DEFAULT_PEER: ${APP_ZAPRET_VPN_DEFAULT_PEER:-iphone}
+      APP_ZAPRET_VPN_ROUTE_CONTAINERS: ${APP_ZAPRET_VPN_ROUTE_CONTAINERS:-}
+      APP_ZAPRET_VPN_TOKEN: ${APP_ZAPRET_VPN_TOKEN:-}
+    ports:
+      - "${APP_ZAPRET_VPN_WG_PORT:-51820}:51820/udp"
+    volumes:
+      - ${APP_DATA_DIR}/data:/data
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - umbrel_main_network
+
+networks:
+  umbrel_main_network:
+    external: true
+    name: umbrel_main_network

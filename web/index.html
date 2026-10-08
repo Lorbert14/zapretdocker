@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zapret VPN Gateway</title>
+<style>
+:root{
+  --bg:#0d0f14; --card:#171a21; --card2:#1e222b; --border:#2a2f3a;
+  --text:#e6e9ef; --dim:#8b93a5; --acc:#6c5ce7; --acc2:#00d1a0; --warn:#f5a623; --err:#ff5d5d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;line-height:1.5}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 60px}
+h1{font-size:22px;margin-bottom:4px}
+.sub{color:var(--dim);margin-bottom:20px}
+h2{font-size:16px;margin-bottom:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:20px}
+.row{display:flex;flex-wrap:wrap;gap:16px}
+.col{flex:1 1 300px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+th{color:var(--dim);font-weight:600;font-size:12px;text-transform:uppercase}
+tr:last-child td{border-bottom:none}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;word-break:break-all}
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.ok{background:rgba(0,209,160,.15);color:var(--acc2)}
+.badge.off{background:rgba(255,93,93,.15);color:var(--err)}
+.badge.warn{background:rgba(245,166,35,.15);color:var(--warn)}
+button{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+button.sec{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+button.danger{background:rgba(255,93,93,.2);color:var(--err)}
+button.small{padding:4px 10px;font-size:12px}
+input[type=text]{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:8px 10px;font-size:13px;width:100%}
+.kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--dim)}
+.qrbox{background:#fff;padding:8px;border-radius:8px;display:inline-block}
+.qrbox img{width:220px;height:220px;display:block}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:flex;align-items:center;justify-content:center;z-index:50}
+.modal .box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:90%;max-height:90%;overflow:auto}
+.flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mt{margin-top:12px}
+.err{color:var(--err);margin-top:8px}
+.hidden{display:none}
+.spin{opacity:.5;pointer-events:none}
+@media(max-width:640px){.row{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Zapret VPN Gateway</h1>
+  <div class="sub">WireGuard VPN для iPhone + обход DPI (zapret) для контейнеров Umbrel</div>
+
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <h2>Статус</h2>
+        <div class="kv"><span class="k">Шлюз (umbrel_main_network)</span><code id="st-gw">—</code></div>
+        <div class="kv"><span class="k">WireGuard</span><span id="st-wg" class="badge off">—</span></div>
+        <div class="kv"><span class="k">nfqws (zapret)</span><span id="st-nfqws" class="badge off">—</span></div>
+        <div class="kv"><span class="k">tpws</span><span id="st-tpws" class="badge off">—</span></div>
+        <div class="kv"><span class="k">Стратегия</span><code id="st-strategy">—</code></div>
+        <div class="kv"><span class="k">Endpoint VPN</span><code id="st-ep">—</code></div>
+        <div class="kv"><span class="k">Публичный ключ сервера</span><code id="st-pub">—</code></div>
+        <div class="flex mt">
+          <button id="btn-zap-restart" class="sec">Перезапустить zapret</button>
+          <button id="btn-zap-stop" class="sec danger">Остановить zapret</button>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card">
+        <h2>Настройки</h2>
+        <div class="kv"><span class="k">Endpoint для клиентов</span></div>
+        <input type="text" id="set-endpoint" placeholder="umbrel.local или публичный IP/домен">
+        <div class="flex mt">
+          <button id="btn-save-settings">Сохранить</button>
+        </div>
+        <div class="kv mt"><span class="k">Формат адреса</span><span class="dim">пример: myhome.duckdns.org — порт {port} добавляется автоматически</span></div>
+        <div class="kv"><span class="k">DNS для клиентов</span><code id="st-dns">—</code></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>WireGuard клиенты (iPhone)</h2>
+    <div class="flex">
+      <input type="text" id="peer-name" placeholder="имя клиента (например iphone)" style="max-width:260px">
+      <button id="btn-add-peer">Добавить клиента</button>
+    </div>
+    <table class="mt">
+      <thead><tr><th>Имя</th><th>Адрес</th><th>Подключён</th><th>Действия</th></tr></thead>
+      <tbody id="peers-body"><tr><td colspan="4" class="dim">Загрузка…</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Контейнеры Umbrel → zapret</h2>
+    <div class="sub" style="margin-bottom:8px">Включите проброс для сервисов скачивания (yt-dlp, cobalt и т.п.): их внешний трафик пойдёт через шлюз с обходом DPI, а веб-интерфейс по umbrel.local:PORT продолжит работать.</div>
+    <div class="flex">
+      <button id="btn-refresh-containers" class="sec">Обновить список</button>
+    </div>
+    <table class="mt">
+      <thead><tr><th>Контейнер</th><th>Образ</th><th>IP</th><th>Маршрут</th><th></th></tr></thead>
+      <tbody id="containers-body"><tr><td colspan="5" class="dim">Загрузка…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div id="qr-modal" class="modal hidden">
+  <div class="box">
+    <h2 id="qr-title">QR-код</h2>
+    <div class="qrbox"><img id="qr-img" src="" alt="QR"></div>
+    <div class="flex mt">
+      <button id="btn-qr-close" class="sec">Закрыть</button>
+      <button id="btn-qr-download" class="sec">Скачать .conf</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var TOKEN = new URLSearchParams(location.search).get('token') || '';
+var currentPeer = null;
+
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+
+function api(path, opts){
+  opts = opts || {};
+  var sep = path.indexOf('?') >= 0 ? '&' : '?';
+  var url = path + (TOKEN ? sep + 'token=' + encodeURIComponent(TOKEN) : '');
+  var init = {headers:{'Content-Type':'application/json'}};
+  if(opts.method) init.method = opts.method;
+  if(opts.body) init.body = JSON.stringify(opts.body);
+  return fetch(url, init).then(function(r){return r.json().then(function(j){return {status:r.status, body:j};});});
+}
+
+function badge(el, ok){
+  el.className = 'badge ' + (ok ? 'ok' : 'off');
+  el.textContent = ok ? 'работает' : 'выключен';
+}
+
+function renderStatus(s){
+  document.getElementById('st-gw').textContent = s.gateway_ip;
+  document.getElementById('st-strategy').textContent = s.zapret_strategy + ' / ' + s.zapret_mode;
+  document.getElementById('st-ep').textContent = s.endpoint + ':' + s.wg_port;
+  document.getElementById('st-dns').textContent = s.client_dns;
+  document.getElementById('st-pub').textContent = s.server_pubkey;
+  badge(document.getElementById('st-wg'), s.wg_up);
+  badge(document.getElementById('st-nfqws'), s.nfqws_running);
+  badge(document.getElementById('st-tpws'), s.tpws_running);
+  document.getElementById('set-endpoint').value = s.endpoint;
+
+  var body = document.getElementById('peers-body');
+  var names = Object.keys(s.wg_peers || {});
+  if(!names.length){ body.innerHTML = '<tr><td colspan="4" class="dim">Клиентов нет — добавьте первый (например «iphone») и отсканируйте QR.</td></tr>'; return; }
+  body.innerHTML = '';
+  names.forEach(function(name){
+    var p = s.wg_peers[name];
+    var connected = p.latest_handshake > 0;
+    var tr = document.createElement('tr');
+    var hb = new Date(p.latest_handshake * 1000);
+    var hs = connected ? 'да (' + hb.toLocaleTimeString() + ')' : 'нет';
+    tr.innerHTML = '<td><b>'+esc(name)+'</b></td><td class="mono">'+esc(p.address)+'</td><td>'+esc(hs)+'</td>' +
+      '<td class="flex">' +
+      '<button class="small" data-act="qr" data-name="'+esc(name)+'">QR</button>' +
+      '<button class="small sec" data-act="conf" data-name="'+esc(name)+'">Конфиг</button>' +
+      '<button class="small sec danger" data-act="del" data-name="'+esc(name)+'">Удалить</button>' +
+      '</td>';
+    body.appendChild(tr);
+  });
+}
+
+function renderContainers(list){
+  var body = document.getElementById('containers-body');
+  if(!list.length){ body.innerHTML = '<tr><td colspan="5" class="dim">Нет запущенных контейнеров.</td></tr>'; return; }
+  body.innerHTML = '';
+  list.forEach(function(c){
+    var tr = document.createElement('tr');
+    var badgeCls = c.routed ? 'ok' : 'dim';
+    var stateText = c.routed ? 'через zapret' : 'напрямую';
+    tr.innerHTML = '<td><b>'+esc(c.name)+'</b></td><td class="mono">'+esc(c.image)+'</td><td class="mono">'+esc(c.ip)+'</td>' +
+      '<td><span class="badge '+badgeCls+'">'+esc(stateText)+'</span></td>' +
+      '<td><button class="small '+(c.routed?'sec danger':'')+'" data-act="'+(c.routed?'unroute':'route')+'" data-name="'+esc(c.name)+'">'+(c.routed?'Отключить':'Через zapret')+'</button></td>';
+    body.appendChild(tr);
+  });
+}
+
+function refresh(){
+  return api('/api/status').then(function(r){
+    if(r.status === 200) renderStatus(r.body);
+  }).then(function(){
+    return api('/api/containers');
+  }).then(function(r){
+    if(r.status === 200) renderContainers(r.body.containers || []);
+  }).catch(function(e){ console.error(e); });
+}
+
+document.getElementById('btn-add-peer').addEventListener('click', function(){
+  var name = document.getElementById('peer-name').value.trim();
+  if(!name){ alert('Введите имя клиента'); return; }
+  this.classList.add('spin');
+  var self = this;
+  api('/api/wg/peers', {method:'POST', body:{name:name}}).then(function(r){
+    self.classList.remove('spin');
+    if(r.status !== 200){ alert((r.body && r.body.error) || 'Ошибка'); return; }
+    document.getElementById('peer-name').value = '';
+    refresh();
+    showQr(name);
+  });
+});
+
+function showQr(name){
+  currentPeer = name;
+  document.getElementById('qr-title').textContent = 'Клиент: ' + name;
+  document.getElementById('qr-img').src = '/api/wg/peers/' + encodeURIComponent(name) + '/qr.png' + (TOKEN ? '?token=' + encodeURIComponent(TOKEN) : '');
+  document.getElementById('qr-modal').classList.remove('hidden');
+}
+
+function downloadConf(name){
+  var url = '/api/wg/peers/' + encodeURIComponent(name) + '/config' + (TOKEN ? '?token=' + encodeURIComponent(TOKEN) : '');
+  var a = document.createElement('a');
+  a.href = url; a.download = name + '.conf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+document.getElementById('btn-qr-close').addEventListener('click', function(){
+  document.getElementById('qr-modal').classList.add('hidden');
+});
+document.getElementById('btn-qr-download').addEventListener('click', function(){
+  if(currentPeer) downloadConf(currentPeer);
+});
+
+document.getElementById('btn-save-settings').addEventListener('click', function(){
+  var ep = document.getElementById('set-endpoint').value.trim();
+  api('/api/settings', {method:'POST', body:{endpoint:ep}}).then(function(r){
+    if(r.status === 200){ alert('Сохранено. Новые конфиги клиентов будут использовать: ' + r.body.endpoint); refresh(); }
+    else alert((r.body && r.body.error) || 'Ошибка');
+  });
+});
+
+document.getElementById('btn-refresh-containers').addEventListener('click', refresh);
+document.getElementById('btn-zap-restart').addEventListener('click', function(){
+  api('/api/zapret', {method:'POST', body:{action:'restart'}}).then(function(r){
+    alert(r.body && r.body.result === 'ok' ? 'zapret перезапущен' : ('Ошибка: ' + (r.body && r.body.detail)));
+    setTimeout(refresh, 1500);
+  });
+});
+document.getElementById('btn-zap-stop').addEventListener('click', function(){
+  if(!confirm('Остановить zapret? Трафик продолжит ходить напрямую.')) return;
+  api('/api/zapret', {method:'POST', body:{action:'stop'}}).then(function(r){
+    alert(r.body && r.body.result === 'ok' ? 'zapret остановлен' : ('Ошибка: ' + (r.body && r.body.detail)));
+    setTimeout(refresh, 1500);
+  });
+});
+
+document.getElementById('peers-body').addEventListener('click', function(e){
+  var btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  var name = btn.getAttribute('data-name');
+  var act = btn.getAttribute('data-act');
+  if(act === 'qr') showQr(name);
+  else if(act === 'conf') downloadConf(name);
+  else if(act === 'del'){
+    if(!confirm('Удалить клиента ' + name + '?')) return;
+    api('/api/wg/peers/' + encodeURIComponent(name), {method:'DELETE'}).then(function(r){
+      if(r.status !== 200) alert((r.body && r.body.error) || 'Ошибка');
+      refresh();
+    });
+  }
+});
+
+document.getElementById('containers-body').addEventListener('click', function(e){
+  var btn = e.target.closest('button[data-act]');
+  if(!btn) return;
+  var name = btn.getAttribute('data-name');
+  var act = btn.getAttribute('data-act');
+  var action = (act === 'route') ? 'add' : 'remove';
+  btn.classList.add('spin');
+  api('/api/routes', {method:'POST', body:{action:action, name:name}}).then(function(r){
+    btn.classList.remove('spin');
+    if(r.status === 200 && r.body.result === 'ok'){
+      refresh();
+    }else{
+      alert('Не удалось: ' + ((r.body && r.body.detail) || (r.body && r.body.error) || 'ошибка'));
+    }
+  });
+});
+
+refresh();
+setInterval(refresh, 10000);
+</script>
+</body>
+</html>
