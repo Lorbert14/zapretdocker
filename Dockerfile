@@ -52,7 +52,7 @@ RUN set -eux; \
     for f in list-general.txt list-google.txt list-exclude.txt; do \
         curl -fsSL "${BASE}/lists/${f}" -o "${f}"; \
     done; \
-    for f in quic_initial_www_google_com.bin tls_clienthello_www_google_com.bin tls_clienthello_4pda_to.bin ACTIVE_DISCORD_UDP.bin ACTIVE_GAME_UDP.bin; do \
+    for f in quic_initial_www_google_com.bin quic_initial_dbankcloud_ru.bin tls_clienthello_www_google_com.bin tls_clienthello_4pda_to.bin tls_clienthello_max_ru.bin stun.bin; do \
         curl -fsSL "${BASE}/bin/${f}" -o "${f}"; \
     done; \
     chmod 644 /opt/zapret/*.txt /opt/zapret/*.bin

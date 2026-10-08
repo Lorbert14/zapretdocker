@@ -1,0 +1,8 @@
+.git
+.gitignore
+.gitattributes
+data
+*.md
+icon.svg
+__pycache__
+*.pyc

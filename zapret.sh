@@ -38,32 +38,37 @@ build_params() {
     if [ "${STRATEGY}" = "general_simple" ]; then
         NFQWS_PARAMS+=(
             "--filter-udp=443" "--hostlist=list-general.txt" "--hostlist-exclude=list-exclude.txt" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fake-quic=quic_initial_www_google_com.bin" "--new"
-            "--filter-udp=19294-19344,50000-50100" "--filter-l7=discord,stun" "--dpi-desync=fake" "--dpi-desync-fake-discord=ACTIVE_DISCORD_UDP.bin" "--dpi-desync-fake-stun=ACTIVE_DISCORD_UDP.bin" "--dpi-desync-repeats=6" "--new"
+            "--filter-udp=19294-19344,50000-50100" "--filter-l7=discord,stun" "--dpi-desync=fake" "--dpi-desync-fake-discord=quic_initial_dbankcloud_ru.bin" "--dpi-desync-fake-stun=quic_initial_dbankcloud_ru.bin" "--dpi-desync-repeats=6" "--new"
             "--filter-tcp=2053,2083,2087,2096,8443" "--hostlist-domains=discord.media" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--new"
-            "--filter-tcp=443" "--hostlist=list-google.txt" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--new"
-            "--filter-tcp=80,443" "--hostlist=list-general.txt" "--hostlist-exclude=list-exclude.txt" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--new"
+            "--filter-tcp=443" "--hostlist=list-google.txt" "--ip-id=zero" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--new"
+            "--filter-tcp=80,443" "--hostlist=list-general.txt" "--hostlist-exclude=list-exclude.txt" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=stun.bin" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--dpi-desync-fake-http=tls_clienthello_max_ru.bin" "--new"
         )
+        if [ "${GAMEFILTER}" = "1" ]; then
+            NFQWS_PARAMS+=(
+                "--filter-tcp=1024-65535" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-any-protocol=1" "--dpi-desync-cutoff=n4" "--dpi-desync-fooling=ts" "--dpi-desync-fake-tls=stun.bin" "--dpi-desync-fake-tls=tls_clienthello_www_google_com.bin" "--dpi-desync-fake-http=tls_clienthello_max_ru.bin" "--new"
+                "--filter-udp=1024-65535" "--dpi-desync=fake" "--dpi-desync-repeats=12" "--dpi-desync-any-protocol=1" "--dpi-desync-fake-unknown-udp=quic_initial_dbankcloud_ru.bin" "--dpi-desync-cutoff=n2"
+            )
+        fi
     else
         NFQWS_PARAMS+=(
             "--filter-udp=443" "--hostlist=list-general.txt" "--hostlist-exclude=list-exclude.txt" "--dpi-desync=fake" "--dpi-desync-repeats=6" "--dpi-desync-fake-quic=quic_initial_www_google_com.bin" "--new"
-            "--filter-udp=19294-19344,50000-50100" "--filter-l7=discord,stun" "--dpi-desync=fake" "--dpi-desync-fake-discord=ACTIVE_DISCORD_UDP.bin" "--dpi-desync-fake-stun=ACTIVE_DISCORD_UDP.bin" "--dpi-desync-repeats=6" "--new"
+            "--filter-udp=19294-19344,50000-50100" "--filter-l7=discord,stun" "--dpi-desync=fake" "--dpi-desync-fake-discord=quic_initial_dbankcloud_ru.bin" "--dpi-desync-fake-stun=quic_initial_dbankcloud_ru.bin" "--dpi-desync-repeats=6" "--new"
             "--filter-tcp=2053,2083,2087,2096,8443" "--hostlist-domains=discord.media" "--dpi-desync=multisplit" "--dpi-desync-split-seqovl=681" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_www_google_com.bin" "--new"
             "--filter-tcp=443" "--hostlist=list-google.txt" "--ip-id=zero" "--dpi-desync=multisplit" "--dpi-desync-split-seqovl=681" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_www_google_com.bin" "--new"
             "--filter-tcp=80,443" "--hostlist=list-general.txt" "--hostlist-exclude=list-exclude.txt" "--dpi-desync=multisplit" "--dpi-desync-split-seqovl=568" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_4pda_to.bin" "--new"
         )
+        if [ "${GAMEFILTER}" = "1" ]; then
+            NFQWS_PARAMS+=(
+                "--filter-tcp=1024-65535" "--dpi-desync=multisplit" "--dpi-desync-any-protocol=1" "--dpi-desync-cutoff=n3" "--dpi-desync-split-seqovl=568" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_4pda_to.bin" "--new"
+                "--filter-udp=1024-65535" "--dpi-desync=fake" "--dpi-desync-repeats=12" "--dpi-desync-any-protocol=1" "--dpi-desync-fake-unknown-udp=quic_initial_dbankcloud_ru.bin" "--dpi-desync-cutoff=n2"
+            )
+        fi
     fi
 
     if [ "${ZAPRET_ALL}" = "1" ]; then
         NFQWS_PARAMS+=(
             "--filter-tcp=80,443" "--dpi-desync=multisplit" "--dpi-desync-any-protocol=1" "--dpi-desync-cutoff=n3" "--dpi-desync-split-seqovl=568" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_4pda_to.bin" "--new"
             "--filter-udp=443" "--dpi-desync=fake" "--dpi-desync-repeats=12" "--dpi-desync-any-protocol=1" "--dpi-desync-cutoff=n2" "--dpi-desync-fake-quic=quic_initial_www_google_com.bin" "--new"
-        )
-    fi
-
-    if [ "${GAMEFILTER}" = "1" ]; then
-        NFQWS_PARAMS+=(
-            "--filter-tcp=1024-65535" "--dpi-desync=multisplit" "--dpi-desync-any-protocol=1" "--dpi-desync-cutoff=n3" "--dpi-desync-split-seqovl=568" "--dpi-desync-split-pos=1" "--dpi-desync-split-seqovl-pattern=tls_clienthello_4pda_to.bin" "--new"
-            "--filter-udp=1024-65535" "--dpi-desync=fake" "--dpi-desync-repeats=12" "--dpi-desync-any-protocol=1" "--dpi-desync-fake-unknown-udp=ACTIVE_GAME_UDP.bin" "--dpi-desync-cutoff=n2"
         )
     fi
 }
