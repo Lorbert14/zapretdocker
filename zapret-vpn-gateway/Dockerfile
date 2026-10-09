@@ -18,7 +18,7 @@ RUN apt-get update \
         jq \
         libmnl0 \
         libnetfilter-queue1 \
-        libnfnetlink1 \
+        libnfnetlink0 \
         procps \
         python3 \
         qrencode \
@@ -27,8 +27,8 @@ RUN apt-get update \
         docker.io \
         zlib1g \
     && rm -rf /var/lib/apt/lists/* \
-    && update-alternatives --set iptables /usr/sbin/iptables-legacy 2>/dev/null || true \
-    && update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy 2>/dev/null || true
+    && (update-alternatives --set iptables /usr/sbin/iptables-legacy 2>/dev/null || true) \
+    && (update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy 2>/dev/null || true)
 
 RUN set -eux; \
     mkdir -p /opt/zapret /tmp/zapret-dl; \
