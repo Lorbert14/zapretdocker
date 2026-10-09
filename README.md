@@ -7,7 +7,7 @@
 ## Установка
 
 1. В umbrelOS откройте **Настройки → App Store → Community App Stores**.
-2. Добавьте URL этого репозитория: `https://github.com/Lorbert14/zapretvpn`.
+2. Добавьте URL этого репозитория: `https://github.com/Lorbert14/zapretdocker`.
 3. Откройте магазин **Zapret** и установите **Zapret VPN Gateway**.
 4. Веб-панель приложения: `http://umbrel.local:8095`.
 

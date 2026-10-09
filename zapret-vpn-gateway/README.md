@@ -22,7 +22,7 @@
 
 1. Репозиторий со стором должен содержать в корне `umbrel-app-store.yml` и каталог `zapret-vpn-gateway/` со всеми файлами приложения (именно так устроен этот репозиторий).
 2. На Umbrel откройте **Настройки → App Store → Community App Stores**.
-3. Добавьте URL репозитория (например `https://github.com/Lorbert14/zapretvpn`).
+3. Добавьте URL репозитория (например `https://github.com/Lorbert14/zapretdocker`).
 4. Перейдите в магазин, найдите **Zapret VPN Gateway** и нажмите **Install**.
 
 > Репозиторий должен быть **публичным**: umbrelOS загружает community-сторы по HTTPS без аутентификации.
