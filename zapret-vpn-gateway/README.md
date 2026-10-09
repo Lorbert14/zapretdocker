@@ -39,11 +39,12 @@ cd ~/umbrel/app-data
 sudo umbrel apps install zapret-vpn-gateway   # если приложение зарегистрировано в одном из подключённых магазинов
 ```
 
-Либо собрать и запустить контейнер напрямую (для отладки):
+Либо собрать образ локально и запустить контейнер напрямую (для отладки):
 
 ```bash
+cd zapret-vpn-gateway
+docker build -t ghcr.io/lorbert14/zapret-vpn-gateway:1.0.0 .
 cd ~/umbrel/app-data/zapret-vpn-gateway
-docker compose build
 APP_DATA_DIR=~/umbrel/app-data/zapret-vpn-gateway docker compose up -d
 ```
 

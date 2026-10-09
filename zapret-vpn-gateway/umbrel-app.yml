@@ -39,7 +39,6 @@ defaultUsername: ""
 defaultPassword: ""
 torOnly: false
 submitter: Community
-submission: ""
 releaseNotes: >-
   Первый релиз Zapret VPN Gateway для umbrelOS.
 
@@ -51,4 +50,4 @@ releaseNotes: >-
 
 
   • Веб-панель управления на порту 8095
-icon: icon.svg
+icon: https://raw.githubusercontent.com/Lorbert14/zapretvpn/master/zapret-vpn-gateway/icon.svg
