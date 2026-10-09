@@ -2,7 +2,7 @@ manifestVersion: 1
 id: zapret-vpn-gateway
 category: networking
 name: Zapret VPN Gateway
-version: "1.0.0"
+version: "1.0.1"
 tagline: WireGuard VPN-шлюз с обходом DPI (zapret) для всей вашей Umbrel
 description: >-
   Zapret VPN Gateway — это комбинированный VPN-шлюз для umbrelOS, который решает две задачи:
@@ -40,14 +40,17 @@ defaultPassword: ""
 torOnly: false
 submitter: Community
 releaseNotes: >-
-  Первый релиз Zapret VPN Gateway для umbrelOS.
+  1.0.1
 
 
-  • WireGuard VPN-шлюз для iOS с QR-кодом
+  Исправлена маршрутизация контейнеров без утилиты ip (например, metube, cobalt):
+  маршрут теперь применяется через вспомогательный контейнер в сетевом
+  пространстве целевого контейнера, наличие ip внутри больше не требуется.
 
 
-  • Обход DPI (nfqws) для выбранных контейнеров
+  1.0.0
 
 
-  • Веб-панель управления на порту 8095
+  Первый релиз Zapret VPN Gateway для umbrelOS: WireGuard VPN для iOS,
+  обход DPI (nfqws) для выбранных контейнеров, веб-панель на порту 8095.
 icon: https://raw.githubusercontent.com/Lorbert14/zapretdocker/master/zapret-vpn-gateway/icon.svg

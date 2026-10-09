@@ -9,6 +9,8 @@ GATEWAY_IP_FILE="${DATA_DIR}/gateway_ip"
 LOCK_FILE="/run/route-manager.lock"
 INTERVAL="${APP_ZAPRET_VPN_ROUTE_INTERVAL:-15}"
 SELF_ID="$(hostname)"
+SELF_IMAGE="$(docker inspect --format '{{.Config.Image}}' "${SELF_ID}" 2>/dev/null | head -n1)"
+[ -z "${SELF_IMAGE}" ] && SELF_IMAGE="ghcr.io/lorbert14/zapret-vpn-gateway:1.0.1"
 
 log() { echo "[route-manager] $*"; }
 
@@ -31,14 +33,14 @@ get_cid() {
     docker ps --filter "name=^/$1$" --format '{{.ID}}' 2>/dev/null | head -n1
 }
 
-get_default() {
+net_ip() {
     local cid="$1"
-    docker exec --privileged "${cid}" sh -c 'command -v ip >/dev/null 2>&1 && ip route show default 2>/dev/null | head -n1' 2>/dev/null || true
+    shift
+    docker run --rm --cap-add NET_ADMIN --net="container:${cid}" --entrypoint /sbin/ip "${SELF_IMAGE}" "$@" 2>/dev/null
 }
 
-has_ip() {
-    local cid="$1"
-    docker exec --privileged "${cid}" sh -c 'command -v ip >/dev/null 2>&1' 2>/dev/null
+get_default() {
+    net_ip "$1" route show default | head -n1
 }
 
 init_files() {
@@ -80,10 +82,6 @@ _apply() {
         log "IP шлюза не определён"
         return 1
     fi
-    if ! has_ip "${cid}"; then
-        log "контейнер '${name}': внутри нет утилиты ip — маршрут невозможен"
-        return 1
-    fi
 
     orig="$(get_default "${cid}")"
     case "${orig}" in
@@ -97,14 +95,14 @@ _apply() {
             ;;
     esac
 
-    if docker exec --privileged "${cid}" ip route replace default via "${gw}" 2>/dev/null; then
+    if net_ip "${cid}" route replace default via "${gw}"; then
         log "контейнер '${name}': default via ${gw} (через zapret)"
         state="{\"cid\":\"${cid}\",\"orig\":\"${orig}\",\"applied_at\":\"$(date -Iseconds)\"}"
         jq --arg n "${name}" --argjson s "${state}" '.[$n]=$s' "${STATE_FILE}" > "${STATE_FILE}.tmp" 2>/dev/null && mv "${STATE_FILE}.tmp" "${STATE_FILE}"
         return 0
     fi
 
-    log "контейнер '${name}': не удалось заменить маршрут (нет CAP_NET_ADMIN в контейнере?)"
+    log "контейнер '${name}': не удалось заменить маршрут (контейнер не поддерживает смену netns?)"
     return 1
 }
 
@@ -114,12 +112,10 @@ _remove() {
     cid="$(get_cid "${name}")"
     gw="$(gateway_ip)"
     if [ -n "${cid}" ] && [ -n "${gw}" ]; then
-        if has_ip "${cid}"; then
-            docker exec --privileged "${cid}" ip route del default via "${gw}" 2>/dev/null || true
-            orig="$(jq -r --arg n "${name}" '.[$n].orig // empty' "${STATE_FILE}" 2>/dev/null || true)"
-            if [ -n "${orig}" ] && [ -z "$(get_default "${cid}")" ]; then
-                docker exec --privileged "${cid}" ip route replace ${orig} 2>/dev/null || true
-            fi
+        net_ip "${cid}" route del default via "${gw}" || true
+        orig="$(jq -r --arg n "${name}" '.[$n].orig // empty' "${STATE_FILE}" 2>/dev/null || true)"
+        if [ -n "${orig}" ] && [ -z "$(get_default "${cid}")" ]; then
+            net_ip "${cid}" route replace ${orig} || true
         fi
     fi
     jq --arg n "${name}" 'del(.[$n])' "${STATE_FILE}" > "${STATE_FILE}.tmp" 2>/dev/null && mv "${STATE_FILE}.tmp" "${STATE_FILE}"

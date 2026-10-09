@@ -36,6 +36,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Read app version from manifest
+        id: app
+        run: |
+          version="$(grep -m1 -oP '^version:\s*"\K[^"]+' zapret-vpn-gateway/umbrel-app.yml)"
+          if [ -z "$version" ]; then
+            echo "could not read version from manifest" >&2
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "publishing version ${version}"
+
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
@@ -44,7 +55,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:1.0.0
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.app.outputs.version }}
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
